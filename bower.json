@@ -1,0 +1,21 @@
+{
+  "name": "binarta.angularticsx.ga",
+  "main": "./src/angularticsx.ga.js",
+  "dependencies": {
+    "angular": "1.2.5",
+    "binarta.notifications.angular":"0.0.*",
+    "binarta.usecase.adapter.angular":"0.0.*"
+  },
+  "devDependencies": {
+    "jquery":"1.10.1",
+    "angular-mocks": "1.2.5",
+    "thk-config-mock":"0.0.*"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
