@@ -1,4 +1,4 @@
-angular.module('angularticsx.ga', ['angulartics'])
+angular.module('angularticsx.ga', ['angulartics', 'angulartics.google.analytics'])
     .run(['config', 'configReader', '$analytics', '$location', function(config, configReader, $analytics, $location) {
         if (config.analytics && ga) {
             configReader({
