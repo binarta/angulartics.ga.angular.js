@@ -3,8 +3,8 @@
   "main": "./src/angularticsx.ga.js",
   "dependencies": {
     "angular": "1.2.5",
-    "binarta.notifications.angular":"0.0.*",
-    "binarta.usecase.adapter.angular":"0.0.*"
+    "angulartics":"0.17.2"
+
   },
   "devDependencies": {
     "jquery":"1.10.1",
