@@ -1,4 +1,4 @@
-# angularx.js
+# angularticsx.ga.js
 
 [AngularJS](http://angularjs.org/) extensions.
 
