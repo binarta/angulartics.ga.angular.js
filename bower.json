@@ -1,5 +1,5 @@
 {
-  "name": "binarta.angularticsx.ga",
+  "name": "binarta.angularticsx.ga.angular",
   "main": "./src/angularticsx.ga.js",
   "dependencies": {
     "angular": "1.2.5",
