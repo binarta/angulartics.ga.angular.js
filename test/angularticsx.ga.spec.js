@@ -12,9 +12,9 @@ describe('angularticsx.ga', function() {
         }
     });
 
-    beforeEach(module('angulartics.mock'));
     beforeEach(module('config'));
     beforeEach(module('angularticsx.ga'));
+    beforeEach(module('angulartics.mock'));
 
     describe('on run', function() {
         var config, ga = jasmine.createSpy('ga'), reader;
