@@ -37,7 +37,7 @@ describe('angularticsx.ga', function() {
             }));
 
             function read() {
-                return reader.calls[0].args[0];
+                return reader.calls.first().args[0];
             }
 
             it('config is read', function() {
@@ -48,11 +48,11 @@ describe('angularticsx.ga', function() {
 
             describe('on success', function() {
                 beforeEach(function() {
-                    reader.calls[0].args[0].success({value:'code'});
+                    reader.calls.first().args[0].success({value:'code'});
                 });
 
                 it('new tracker gets installed with ga', function() {
-                    expect(ga.calls[0].args).toEqual(['create', 'code', 'auto', {name:'custom'}]);
+                    expect(ga.calls.first().args).toEqual(['create', 'code', 'auto', {name:'custom'}]);
                 });
 
                 it('angulartics is configured for additional tracker', inject(function($analytics) {
@@ -60,7 +60,7 @@ describe('angularticsx.ga', function() {
                 }));
 
                 it('manually send a pageview to ga for the installed tracker', inject(function($location) {
-                    expect(ga.calls[1].args).toEqual(['custom.send', 'pageview', 'base-path/' + $location.url()])
+                    expect(ga.calls.mostRecent().args).toEqual(['custom.send', 'pageview', 'base-path/' + $location.url()])
                 }));
             });
         });
