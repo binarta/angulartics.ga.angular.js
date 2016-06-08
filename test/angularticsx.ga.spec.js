@@ -33,7 +33,7 @@ describe('angularticsx.ga', function() {
                 config.analytics = true;
                 window.ga = ga;
                 var run = angular.module('angularticsx.ga')._runBlocks[0];
-                run[run.length-1](config, reader, $analytics, $location);
+                run[run.length-1]($location, $analytics, config, reader);
             }));
 
             function read() {
