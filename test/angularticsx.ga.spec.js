@@ -49,6 +49,7 @@ describe('angularticsx.ga', function() {
 
                 it('ga key is created', function () {
                     expect(ga).toHaveBeenCalledWith('create', 'ga-key', 'auto', {name: 'custom'});
+                    expect(ga.calls.count()).toEqual(1);
                 });
 
                 it('angulartics is configured for additional tracker', function() {
@@ -103,6 +104,7 @@ describe('angularticsx.ga', function() {
 
                 it('ga shared key is created', function () {
                     expect(ga).toHaveBeenCalledWith('create', 'shared-key', 'auto');
+                    expect(ga.calls.count()).toEqual(1);
                 });
 
                 it('track current path', function () {

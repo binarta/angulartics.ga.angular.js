@@ -28,10 +28,18 @@ angular.module('angularticsx.ga', ['ngRoute', 'angularx', 'config', 'angulartics
             }
 
             function initAnalytics(key) {
-                if (isSharedAnalyticsEnabled()) ga('create', config.sharedAnalytics, 'auto');
+                if (isSharedAnalyticsEnabled()) initSharedKey();
+                if (key) initCustomKey(key);
+                trackPageViews();
+            }
+
+            function initSharedKey() {
+                ga('create', config.sharedAnalytics, 'auto');
+            }
+
+            function initCustomKey(key) {
                 ga('create', key, 'auto', {name: 'custom'});
                 $analytics.settings.ga.additionalAccountNames = ['custom'];
-                trackPageViews();
             }
 
             function trackPageViews() {
