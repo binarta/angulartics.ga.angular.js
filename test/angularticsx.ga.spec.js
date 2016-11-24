@@ -1,67 +1,155 @@
 describe('angularticsx.ga', function() {
-    angular.module('angulartics.mock', []).factory('$analytics', function() {
-        return {
-            settings: {
-                ga: {
-                    additionalAccountNames:undefined
-                },
-                pageTracking:{
-                    basePath:'base-path/'
-                }
-            }
-        }
+    beforeEach(module('angularticsx.ga'));
+    beforeEach(module('binartajs-angular1-spec'));
+
+    var $rootScope, config, reader, binarta, resourceLoader, $analytics, $location;
+
+    beforeEach(inject(function(_$rootScope_, _configReader_, _config_, _binarta_, _resourceLoader_, _$analytics_, _$location_) {
+        $rootScope = _$rootScope_;
+        reader = _configReader_;
+        config = _config_;
+        binarta = _binarta_;
+        resourceLoader = _resourceLoader_;
+        $analytics = _$analytics_;
+        $location = _$location_;
+        ga = jasmine.createSpy('ga');
+        $location.path('/test');
+    }));
+
+    function triggerBinartaSchedule() {
+        binarta.application.adhesiveReading.read('-');
+    }
+
+    it('disable virtualPageviews within angulartics module', function () {
+        expect($analytics.virtualPageviewsSpy).toEqual(false);
     });
 
-    beforeEach(module('config'));
-    beforeEach(module('angularticsx.ga'));
-    beforeEach(module('angulartics.mock'));
-
-    describe('on run', function() {
-        var config, ga = jasmine.createSpy('ga'), reader;
-
-        beforeEach(inject(function(_configReader_, _config_) {
-            reader = _configReader_;
-            config = _config_;
-        }));
-
-        it('config reader is not executed', function() {
-            expect(reader.calls[0]).toBeUndefined();
+    describe('with analytics enabled', function () {
+        beforeEach(function() {
+            config.sharedAnalytics = undefined;
+            config.analytics = true;
+            binarta.application.gateway.clear()
         });
 
-        describe('with analytics enabled', function() {
-            beforeEach(inject(function($analytics, $location) {
-                config.analytics = true;
-                window.ga = ga;
-                var run = angular.module('angularticsx.ga')._runBlocks[0];
-                run[run.length-1]($location, $analytics, config, reader);
-            }));
-
-            function read() {
-                return reader.calls.first().args[0];
-            }
-
-            it('config is read', function() {
-                expect(read().$scope).toEqual({});
-                expect(read().key).toEqual('analytics.ga.key');
-                expect(read().scope).toEqual('public');
+        describe('and given an Analytics key', function () {
+            beforeEach(function () {
+                binarta.application.gateway.addPublicConfig({id: 'analytics.ga.key', value: 'ga-key'});
+                triggerBinartaSchedule();
             });
 
-            describe('on success', function() {
-                beforeEach(function() {
-                    reader.calls.first().args[0].success({value:'code'});
+            it('analytics script is loaded', function () {
+                expect(resourceLoader.getScript).toHaveBeenCalledWith('//www.google-analytics.com/analytics.js');
+            });
+
+            describe('on script loaded', function () {
+                beforeEach(function () {
+                    resourceLoader.getScriptDeferred.resolve();
+                    $rootScope.$digest();
                 });
 
-                it('new tracker gets installed with ga', function() {
-                    expect(ga.calls.first().args).toEqual(['create', 'code', 'auto', {name:'custom'}]);
+                it('ga key is created', function () {
+                    expect(ga).toHaveBeenCalledWith('create', 'ga-key', 'auto', {name: 'custom'});
                 });
 
-                it('angulartics is configured for additional tracker', inject(function($analytics) {
+                it('angulartics is configured for additional tracker', function() {
                     expect($analytics.settings.ga.additionalAccountNames).toEqual(['custom']);
-                }));
+                });
 
-                it('manually send a pageview to ga for the installed tracker', inject(function($location) {
-                    expect(ga.calls.mostRecent().args).toEqual(['custom.send', 'pageview', 'base-path/' + $location.url()])
-                }));
+                it('track current path', function () {
+                    expect($analytics.pageTrack).toHaveBeenCalledWith('/test');
+                });
+
+                describe('on route change', function () {
+                    beforeEach(function () {
+                        $location.path('/new/path');
+                        $rootScope.$broadcast('$routeChangeSuccess');
+                    });
+
+                    it('track new path', function () {
+                        expect($analytics.pageTrack).toHaveBeenCalledWith('/new/path');
+                    });
+                });
+
+                describe('on route changed multiple times with same path', function () {
+                    beforeEach(function () {
+                        $analytics.pageTrack.calls.reset();
+                        $location.path('/new/path');
+                        $rootScope.$broadcast('$routeChangeSuccess');
+                        $rootScope.$broadcast('$routeChangeSuccess');
+                    });
+
+                    it('path has been tracked once', function () {
+                        expect($analytics.pageTrack.calls.count()).toEqual(1);
+                    });
+                });
+            });
+        });
+
+        describe('when shared analytics key present', function () {
+            beforeEach(function () {
+                config.sharedAnalytics = 'shared-key';
+                triggerBinartaSchedule();
+            });
+
+            it('analytics script is loaded', function () {
+                expect(resourceLoader.getScript).toHaveBeenCalledWith('//www.google-analytics.com/analytics.js');
+            });
+
+            describe('on script loaded', function () {
+                beforeEach(function () {
+                    resourceLoader.getScriptDeferred.resolve();
+                    $rootScope.$digest();
+                });
+
+                it('ga shared key is created', function () {
+                    expect(ga).toHaveBeenCalledWith('create', 'shared-key', 'auto');
+                });
+
+                it('track current path', function () {
+                    expect($analytics.pageTrack).toHaveBeenCalledWith('/test');
+                });
+
+                describe('on route change', function () {
+                    beforeEach(function () {
+                        $location.path('/new/path');
+                        $rootScope.$broadcast('$routeChangeSuccess');
+                    });
+
+                    it('track new path', function () {
+                        expect($analytics.pageTrack).toHaveBeenCalledWith('/new/path');
+                    });
+                });
+            });
+        });
+
+        describe('with multiple languages', function () {
+            beforeEach(function () {
+                binarta.application.gateway.updateApplicationProfile({supportedLanguages: ['en', 'nl']});
+                binarta.application.refresh();
+                binarta.application.setLocaleForPresentation('en');
+                triggerBinartaSchedule();
+            });
+
+            describe('and is on unlocalized path', function () {
+                beforeEach(function () {
+                    $location.path('/path');
+                    $rootScope.$broadcast('$routeChangeSuccess');
+                });
+
+                it('path is not tracked', function () {
+                    expect($analytics.pageTrack).not.toHaveBeenCalled();
+                });
+            });
+
+            describe('and is on localized path', function () {
+                beforeEach(function () {
+                    $location.path('/en/path');
+                    $rootScope.$broadcast('$routeChangeSuccess');
+                });
+
+                it('path is tracked', function () {
+                    expect($analytics.pageTrack).toHaveBeenCalledWith('/en/path');
+                });
             });
         });
     });

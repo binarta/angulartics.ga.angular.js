@@ -1,30 +1,62 @@
-angular.module('angularticsx.ga', ['config', 'angulartics', 'angulartics.google.analytics'])
-    .run(['$location', '$analytics', 'config', 'configReader',
-        function($location, $analytics, config, configReader) {
-            if (config.analytics && config.analytics != 'false'){
-                (function (i, s, o, g, r, a, m) {
-                    i['GoogleAnalyticsObject'] = r;
-                    i[r] = i[r] || function () {
-                            (i[r].q = i[r].q || []).push(arguments)
-                        }, i[r].l = 1 * new Date();
+angular.module('angularticsx.ga', ['ngRoute', 'angularx', 'config', 'angulartics', 'angulartics.google.analytics', 'binarta-applicationjs-angular1'])
+    .config(['$analyticsProvider', function ($analyticsProvider) {
+        $analyticsProvider.virtualPageviews(false);
+    }])
+    .run(['$rootScope', '$location', '$analytics', 'config', 'resourceLoader', 'binarta', function ($rootScope, $location, $analytics, config, resourceLoader, binarta) {
+        binarta.schedule(function () {
+            var previousPath;
 
-                    a = s.createElement(o), m = s.getElementsByTagName(o)[0];
-                    a.async = 1;
-                    a.src = g;
-                    m.parentNode.insertBefore(a, m);
-                })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+            if (!isAnalyticsEnabled()) return;
 
-                if (config.sharedAnalytics && config.sharedAnalytics != 'false') ga('create', config.sharedAnalytics, 'auto');
-                
-                configReader({
-                    $scope:{},
-                    key:'analytics.ga.key',
-                    scope:'public',
-                    success: function(data) {
-                        ga('create', data.value, 'auto', {name:'custom'});
-                        $analytics.settings.ga.additionalAccountNames = ['custom'];
-                        ga('custom.send', 'pageview', $analytics.settings.pageTracking.basePath + $location.url())
-                    }
+            function isAnalyticsEnabled() {
+                return config.analytics && config.analytics != 'false';
+            }
+
+            binarta.application.config.findPublic('analytics.ga.key', function (key) {
+                if (key || isSharedAnalyticsEnabled()) loadAnalyticsScript(key);
+                else trackPageViews();
+            });
+
+            function isSharedAnalyticsEnabled() {
+                return config.sharedAnalytics && config.sharedAnalytics != 'false';
+            }
+
+            function loadAnalyticsScript(key) {
+                resourceLoader.getScript('//www.google-analytics.com/analytics.js').then(function () {
+                    initAnalytics(key)
                 });
             }
+
+            function initAnalytics(key) {
+                if (isSharedAnalyticsEnabled()) ga('create', config.sharedAnalytics, 'auto');
+                ga('create', key, 'auto', {name: 'custom'});
+                $analytics.settings.ga.additionalAccountNames = ['custom'];
+                trackPageViews();
+            }
+
+            function trackPageViews() {
+                pageTrack();
+                $rootScope.$on('$routeChangeSuccess', pageTrack);
+            }
+
+            function pageTrack() {
+                var path = $location.path();
+                if (isNotOnSamePath(path) && (hasNoMultipleLanguages() || isNotOnUnlocalizedPath()))
+                    $analytics.pageTrack(path);
+            }
+
+            function isNotOnSamePath(path) {
+                var isNotSamePath = previousPath != path;
+                previousPath = path;
+                return isNotSamePath;
+            }
+
+            function hasNoMultipleLanguages() {
+                return binarta.application.supportedLanguages() <= 1;
+            }
+
+            function isNotOnUnlocalizedPath() {
+                return $location.path() != binarta.application.unlocalizedPath();
+            }
+        });
     }]);

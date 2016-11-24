@@ -5,6 +5,7 @@
     "./sources.json"
   ],
   "dependencies": {
+    "binartajs-angular1": "1.*.*",
     "binarta.angularx": "0.*.*",
     "binarta.config.angular": "0.*.*",
     "angulartics":"0.17.2"
