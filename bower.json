@@ -12,8 +12,9 @@
 
   },
   "devDependencies": {
-    "angular-mocks": "1.*.*",
-    "thk-config-mock":"0.*.*"
+    "angular-mocks": "1.5.*",
+    "thk-config-mock":"0.*.*",
+    "thk-web-storage-mock": "0.*.*"
   },
   "ignore": [
     "**/.*",
