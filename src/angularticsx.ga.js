@@ -6,20 +6,20 @@ angular.module('angularticsx.ga', ['ngRoute', 'angularx', 'config', 'angulartics
         binarta.schedule(function () {
             var previousPath;
 
-            if (!isAnalyticsEnabled()) return;
+            if (!isAnalyticsEnabled() && !isSharedAnalyticsEnabled()) return;
 
             function isAnalyticsEnabled() {
-                return config.analytics && config.analytics != 'false';
+                return config.analytics && config.analytics !== 'false';
+            }
+
+            function isSharedAnalyticsEnabled() {
+                return config.sharedAnalytics && config.sharedAnalytics !== 'false';
             }
 
             binarta.application.config.findPublic('analytics.ga.key', function (key) {
                 if (key || isSharedAnalyticsEnabled()) loadAnalyticsScript(key);
                 else trackPageViews();
             });
-
-            function isSharedAnalyticsEnabled() {
-                return config.sharedAnalytics && config.sharedAnalytics != 'false';
-            }
 
             function loadAnalyticsScript(key) {
                 resourceLoader.getScript('//www.google-analytics.com/analytics.js').then(function () {
@@ -54,7 +54,7 @@ angular.module('angularticsx.ga', ['ngRoute', 'angularx', 'config', 'angulartics
             }
 
             function isNotOnSamePath(path) {
-                var isNotSamePath = previousPath != path;
+                var isNotSamePath = previousPath !== path;
                 previousPath = path;
                 return isNotSamePath;
             }
@@ -64,7 +64,7 @@ angular.module('angularticsx.ga', ['ngRoute', 'angularx', 'config', 'angulartics
             }
 
             function isNotOnUnlocalizedPath() {
-                return $location.path() != binarta.application.unlocalizedPath();
+                return $location.path() !== binarta.application.unlocalizedPath();
             }
         });
     }]);

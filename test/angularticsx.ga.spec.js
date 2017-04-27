@@ -20,16 +20,67 @@ describe('angularticsx.ga', function() {
         binarta.application.adhesiveReading.read('-');
     }
 
+    function assertSharedAnalytics() {
+        describe('when shared analytics key present', function () {
+            beforeEach(function () {
+                config.sharedAnalytics = 'shared-key';
+                triggerBinartaSchedule();
+            });
+
+            it('analytics script is loaded', function () {
+                expect(resourceLoader.getScript).toHaveBeenCalledWith('//www.google-analytics.com/analytics.js');
+            });
+
+            describe('on script loaded', function () {
+                beforeEach(function () {
+                    resourceLoader.getScriptDeferred.resolve();
+                    $rootScope.$digest();
+                });
+
+                it('ga shared key is created', function () {
+                    expect(ga).toHaveBeenCalledWith('create', 'shared-key', 'auto');
+                    expect(ga.calls.count()).toEqual(1);
+                });
+
+                it('track current path', function () {
+                    expect($analytics.pageTrack).toHaveBeenCalledWith('/test');
+                });
+
+                describe('on route change', function () {
+                    beforeEach(function () {
+                        $location.path('/new/path');
+                        $rootScope.$broadcast('$routeChangeSuccess');
+                    });
+
+                    it('track new path', function () {
+                        expect($analytics.pageTrack).toHaveBeenCalledWith('/new/path');
+                    });
+                });
+            });
+        });
+    }
+
     it('disable virtualPageviews within angulartics module', function () {
         expect($analytics.virtualPageviewsSpy).toEqual(false);
     });
 
-    describe('with analytics enabled', function () {
+    describe('when analytics is disabled', function () {
+        beforeEach(function() {
+            config.analytics = false;
+            binarta.application.gateway.clear()
+        });
+
+        assertSharedAnalytics();
+    });
+
+    describe('when analytics is enabled', function () {
         beforeEach(function() {
             config.sharedAnalytics = undefined;
             config.analytics = true;
             binarta.application.gateway.clear()
         });
+
+        assertSharedAnalytics();
 
         describe('and given an Analytics key', function () {
             beforeEach(function () {
@@ -81,44 +132,6 @@ describe('angularticsx.ga', function() {
 
                     it('path has been tracked once', function () {
                         expect($analytics.pageTrack.calls.count()).toEqual(1);
-                    });
-                });
-            });
-        });
-
-        describe('when shared analytics key present', function () {
-            beforeEach(function () {
-                config.sharedAnalytics = 'shared-key';
-                triggerBinartaSchedule();
-            });
-
-            it('analytics script is loaded', function () {
-                expect(resourceLoader.getScript).toHaveBeenCalledWith('//www.google-analytics.com/analytics.js');
-            });
-
-            describe('on script loaded', function () {
-                beforeEach(function () {
-                    resourceLoader.getScriptDeferred.resolve();
-                    $rootScope.$digest();
-                });
-
-                it('ga shared key is created', function () {
-                    expect(ga).toHaveBeenCalledWith('create', 'shared-key', 'auto');
-                    expect(ga.calls.count()).toEqual(1);
-                });
-
-                it('track current path', function () {
-                    expect($analytics.pageTrack).toHaveBeenCalledWith('/test');
-                });
-
-                describe('on route change', function () {
-                    beforeEach(function () {
-                        $location.path('/new/path');
-                        $rootScope.$broadcast('$routeChangeSuccess');
-                    });
-
-                    it('track new path', function () {
-                        expect($analytics.pageTrack).toHaveBeenCalledWith('/new/path');
                     });
                 });
             });
