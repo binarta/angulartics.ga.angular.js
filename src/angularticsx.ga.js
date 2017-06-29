@@ -49,22 +49,13 @@ angular.module('angularticsx.ga', ['ngRoute', 'angularx', 'config', 'angulartics
 
             function pageTrack() {
                 var path = $location.path();
-                if (isNotOnSamePath(path) && (hasNoMultipleLanguages() || isNotOnUnlocalizedPath()))
-                    $analytics.pageTrack(path);
+                if (isNotOnSamePath(path)) $analytics.pageTrack(path);
             }
 
             function isNotOnSamePath(path) {
                 var isNotSamePath = previousPath !== path;
                 previousPath = path;
                 return isNotSamePath;
-            }
-
-            function hasNoMultipleLanguages() {
-                return binarta.application.supportedLanguages() <= 1;
-            }
-
-            function isNotOnUnlocalizedPath() {
-                return $location.path() !== binarta.application.unlocalizedPath();
             }
         });
     }]);

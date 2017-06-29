@@ -136,36 +136,5 @@ describe('angularticsx.ga', function() {
                 });
             });
         });
-
-        describe('with multiple languages', function () {
-            beforeEach(function () {
-                binarta.application.gateway.updateApplicationProfile({supportedLanguages: ['en', 'nl']});
-                binarta.application.refresh();
-                binarta.application.setLocaleForPresentation('en');
-                triggerBinartaSchedule();
-            });
-
-            describe('and is on unlocalized path', function () {
-                beforeEach(function () {
-                    $location.path('/path');
-                    $rootScope.$broadcast('$routeChangeSuccess');
-                });
-
-                it('path is not tracked', function () {
-                    expect($analytics.pageTrack).not.toHaveBeenCalled();
-                });
-            });
-
-            describe('and is on localized path', function () {
-                beforeEach(function () {
-                    $location.path('/en/path');
-                    $rootScope.$broadcast('$routeChangeSuccess');
-                });
-
-                it('path is tracked', function () {
-                    expect($analytics.pageTrack).toHaveBeenCalledWith('/en/path');
-                });
-            });
-        });
     });
 });
