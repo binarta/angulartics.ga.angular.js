@@ -1,61 +1,72 @@
-angular.module('angularticsx.ga', ['ngRoute', 'angularx', 'config', 'angulartics', 'angulartics.google.analytics', 'binarta-applicationjs-angular1'])
-    .config(['$analyticsProvider', function ($analyticsProvider) {
-        $analyticsProvider.virtualPageviews(false);
-    }])
-    .run(['$rootScope', '$location', '$analytics', 'config', 'resourceLoader', 'binarta', function ($rootScope, $location, $analytics, config, resourceLoader, binarta) {
-        binarta.schedule(function () {
-            var previousPath;
-
-            if (!isAnalyticsEnabled() && !isSharedAnalyticsEnabled()) return;
-
-            function isAnalyticsEnabled() {
-                return config.analytics && config.analytics !== 'false';
-            }
-
-            function isSharedAnalyticsEnabled() {
-                return config.sharedAnalytics && config.sharedAnalytics !== 'false';
-            }
-
-            binarta.application.config.findPublic('analytics.ga.key', function (key) {
-                if (key || isSharedAnalyticsEnabled()) loadAnalyticsScript(key);
-                else trackPageViews();
+(function (angular) {
+    angular.module('angularticsx.ga', ['ngRoute', 'angularx', 'config', 'angulartics', 'angulartics.google.analytics', 'binarta-applicationjs-angular1', 'notifications'])
+        .config(['$analyticsProvider', function ($analyticsProvider) {
+            $analyticsProvider.virtualPageviews(false);
+        }])
+        .service('analyticsService', ['$rootScope', '$location', '$analytics', 'config', 'resourceLoader', 'binarta', AnalyticsServiceScheduler])
+        .run(['topicRegistry', 'analyticsService', function (topicRegistry, analyticsService) {
+            topicRegistry.subscribe('cookies.accepted', function () {
+                analyticsService.schedule();
             });
+        }]);
 
-            function loadAnalyticsScript(key) {
-                resourceLoader.getScript('//www.google-analytics.com/analytics.js').then(function () {
-                    initAnalytics(key)
+    function AnalyticsServiceScheduler($rootScope, $location, $analytics, config, resourceLoader, binarta) {
+        this.schedule = function () {
+            binarta.schedule(function () {
+                var previousPath;
+
+                if (!isAnalyticsEnabled() && !isSharedAnalyticsEnabled()) return;
+
+                function isAnalyticsEnabled() {
+                    return config.analytics && config.analytics !== 'false';
+                }
+
+                function isSharedAnalyticsEnabled() {
+                    return config.sharedAnalytics && config.sharedAnalytics !== 'false';
+                }
+
+                binarta.application.config.findPublic('analytics.ga.key', function (key) {
+                    if (key || isSharedAnalyticsEnabled()) loadAnalyticsScript(key);
+                    else trackPageViews();
                 });
-            }
 
-            function initAnalytics(key) {
-                if (isSharedAnalyticsEnabled()) initSharedKey();
-                if (key) initCustomKey(key);
-                trackPageViews();
-            }
+                function loadAnalyticsScript(key) {
+                    resourceLoader.getScript('//www.google-analytics.com/analytics.js').then(function () {
+                        initAnalytics(key)
+                    });
+                }
 
-            function initSharedKey() {
-                ga('create', config.sharedAnalytics, 'auto');
-            }
+                function initAnalytics(key) {
+                    if (isSharedAnalyticsEnabled()) initSharedKey();
+                    if (key) initCustomKey(key);
+                    trackPageViews();
+                }
 
-            function initCustomKey(key) {
-                ga('create', key, 'auto', {name: 'custom'});
-                $analytics.settings.ga.additionalAccountNames = ['custom'];
-            }
+                function initSharedKey() {
+                    ga('create', config.sharedAnalytics, 'auto');
+                }
 
-            function trackPageViews() {
-                pageTrack();
-                $rootScope.$on('$routeChangeSuccess', pageTrack);
-            }
+                function initCustomKey(key) {
+                    ga('create', key, 'auto', { name: 'custom' });
+                    $analytics.settings.ga.additionalAccountNames = ['custom'];
+                }
 
-            function pageTrack() {
-                var path = $location.path();
-                if (isNotOnSamePath(path)) $analytics.pageTrack(path);
-            }
+                function trackPageViews() {
+                    pageTrack();
+                    $rootScope.$on('$routeChangeSuccess', pageTrack);
+                }
 
-            function isNotOnSamePath(path) {
-                var isNotSamePath = previousPath !== path;
-                previousPath = path;
-                return isNotSamePath;
-            }
-        });
-    }]);
+                function pageTrack() {
+                    var path = $location.path();
+                    if (isNotOnSamePath(path)) $analytics.pageTrack(path);
+                }
+
+                function isNotOnSamePath(path) {
+                    var isNotSamePath = previousPath !== path;
+                    previousPath = path;
+                    return isNotSamePath;
+                }
+            });
+        }
+    }
+})(angular);
