@@ -4,9 +4,14 @@
             $analyticsProvider.virtualPageviews(false);
         }])
         .service('analyticsService', ['$rootScope', '$location', '$analytics', 'config', 'resourceLoader', 'binarta', AnalyticsServiceScheduler])
-        .run(['topicRegistry', 'analyticsService', function (topicRegistry, analyticsService) {
-            topicRegistry.subscribe('cookies.accepted', function () {
+        .run(['topicRegistry', 'binarta', 'analyticsService', function (topicRegistry, binarta, analyticsService) {
+            if (binarta.application.cookies.permission.status == 'permission-granted') {
                 analyticsService.schedule();
+            }
+            binarta.application.cookies.permission.eventRegistry.add({
+                granted: function () {
+                    analyticsService.schedule();
+                }
             });
         }]);
 
@@ -47,7 +52,7 @@
                 }
 
                 function initCustomKey(key) {
-                    ga('create', key, 'auto', { name: 'custom' });
+                    ga('create', key, 'auto', {name: 'custom'});
                     $analytics.settings.ga.additionalAccountNames = ['custom'];
                 }
 

@@ -18,9 +18,11 @@ describe('angularticsx.ga', function () {
         $location.path('/test');
     }));
 
+    afterEach(inject(function(localStorage) {
+        localStorage.removeItem('cookiesAccepted');
+    }));
 
     describe('analyticsService', function () {
-
         function triggerBinartaSchedule() {
             binarta.application.adhesiveReading.read('-');
         }
@@ -29,7 +31,6 @@ describe('angularticsx.ga', function () {
             describe('when shared analytics key present', function () {
                 beforeEach(function () {
                     config.sharedAnalytics = 'shared-key';
-                    analyticsService.schedule();
                     triggerBinartaSchedule();
                 });
 
@@ -91,7 +92,6 @@ describe('angularticsx.ga', function () {
             describe('and given an Analytics key', function () {
                 beforeEach(function () {
                     binarta.application.gateway.addPublicConfig({ id: 'analytics.ga.key', value: 'ga-key' });
-                    analyticsService.schedule();
                     triggerBinartaSchedule();
                 });
 
@@ -147,15 +147,9 @@ describe('angularticsx.ga', function () {
     });
 
     describe('Default run on module injection -', function () {
-        
-        it('Should subscribe to the "cookies.accepted" event', function() {
-            expect(topicRegistry.subscribe).toHaveBeenCalled();
-            expect(topicRegistry.subscribe.calls.mostRecent().args[0]).toBe('cookies.accepted');
-        });
-
         it('Should schedule the analytics on receiving the "cookies.accepted" event', function() {
             spyOn(analyticsService, 'schedule');
-            topicRegistry.subscribe.calls.mostRecent().args[1]();
+            binarta.application.cookies.permission.grant();
             expect(analyticsService.schedule).toHaveBeenCalled();
         });
     });
