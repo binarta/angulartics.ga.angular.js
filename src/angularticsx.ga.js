@@ -1,10 +1,10 @@
 (function (angular) {
-    angular.module('angularticsx.ga', ['ngRoute', 'angularx', 'config', 'angulartics', 'angulartics.google.analytics', 'binarta-applicationjs-angular1', 'notifications'])
+    angular.module('angularticsx.ga', ['ngRoute', 'angularx', 'config', 'angulartics', 'angulartics.google.analytics', 'binarta-applicationjs-angular1'])
         .config(['$analyticsProvider', function ($analyticsProvider) {
             $analyticsProvider.virtualPageviews(false);
         }])
         .service('analyticsService', ['$rootScope', '$location', '$analytics', 'config', 'resourceLoader', 'binarta', AnalyticsServiceScheduler])
-        .run(['topicRegistry', 'binarta', 'analyticsService', function (topicRegistry, binarta, analyticsService) {
+        .run(['binarta', 'analyticsService', function (binarta, analyticsService) {
             if (binarta.application.cookies.permission.status == 'permission-granted') {
                 analyticsService.schedule();
             }
@@ -52,7 +52,7 @@
                 }
 
                 function initCustomKey(key) {
-                    ga('create', key, 'auto', {name: 'custom'});
+                    ga('create', key, 'auto', { name: 'custom' });
                     $analytics.settings.ga.additionalAccountNames = ['custom'];
                 }
 

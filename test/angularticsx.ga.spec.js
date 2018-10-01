@@ -2,9 +2,9 @@ describe('angularticsx.ga', function () {
     beforeEach(module('angularticsx.ga'));
     beforeEach(module('binartajs-angular1-spec'));
 
-    var $rootScope, config, reader, binarta, resourceLoader, $analytics, $location, analyticsService, topicRegistry;
+    var $rootScope, config, reader, binarta, resourceLoader, $analytics, $location, analyticsService;
 
-    beforeEach(inject(function (_$rootScope_, _configReader_, _config_, _binarta_, _resourceLoader_, _$analytics_, _$location_, _analyticsService_, _topicRegistry_) {
+    beforeEach(inject(function (_$rootScope_, _configReader_, _config_, _binarta_, _resourceLoader_, _$analytics_, _$location_, _analyticsService_) {
         $rootScope = _$rootScope_;
         reader = _configReader_;
         config = _config_;
@@ -13,12 +13,11 @@ describe('angularticsx.ga', function () {
         $analytics = _$analytics_;
         $location = _$location_;
         analyticsService = _analyticsService_;
-        topicRegistry = _topicRegistry_;
         ga = jasmine.createSpy('ga');
         $location.path('/test');
     }));
 
-    afterEach(inject(function(localStorage) {
+    afterEach(inject(function (localStorage) {
         localStorage.removeItem('cookiesAccepted');
     }));
 
@@ -147,7 +146,7 @@ describe('angularticsx.ga', function () {
     });
 
     describe('Default run on module injection -', function () {
-        it('Should schedule the analytics on receiving the "cookies.accepted" event', function() {
+        it('Should schedule the analytics on receiving the "cookies.accepted" event', function () {
             spyOn(analyticsService, 'schedule');
             binarta.application.cookies.permission.grant();
             expect(analyticsService.schedule).toHaveBeenCalled();
