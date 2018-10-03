@@ -1,7 +1,8 @@
 {
   "default": {
     "angulartics": "bower_components/angulartics/src/angulartics.js",
-    "angulartics-ga": "bower_components/angulartics/src/angulartics-ga.js",
+    "angulartics-ga": "bower_components/angulartics/dist/angulartics-ga.min.js",
+    "angulartics-gtm": "bower_components/angulartics/dist/angulartics-gtm.min.js",
     "bin.angularticsx.ga": "bower_components/binarta.angularticsx.ga.angular/src/angularticsx.ga.js"
   }
 }

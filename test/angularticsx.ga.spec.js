@@ -73,7 +73,7 @@ describe('angularticsx.ga', function () {
         describe('when analytics is disabled', function () {
             beforeEach(function () {
                 config.analytics = false;
-                binarta.application.gateway.clear()
+                binarta.application.gateway.clear();
             });
 
             assertSharedAnalytics();
@@ -139,6 +139,47 @@ describe('angularticsx.ga', function () {
                         it('path has been tracked once', function () {
                             expect($analytics.pageTrack.calls.count()).toEqual(1);
                         });
+                    });
+                });
+            });
+
+            describe('and given an Google Tag Manager key', function () {
+                beforeEach(function () {
+                    binarta.application.gateway.addPublicConfig({ id: 'analytics.gtm.key', value: 'gtm-key' });
+                    triggerBinartaSchedule();
+                });
+
+                it('gtm script is loaded', function () {
+                    expect(resourceLoader.getScript).toHaveBeenCalledWith('//www.googletagmanager.com/gtm.js?id=gtm-key');
+                });
+
+                describe('on script loaded', function () {
+                    beforeEach(function () {
+                        resourceLoader.getScriptDeferred.resolve();
+                        $rootScope.$digest();
+                    });
+
+                    it('track current path', function () {
+                        expect($analytics.pageTrack).toHaveBeenCalledWith('/test');
+                    });
+                });
+            });
+
+            describe('when given both a gtm key and a ga key', function () {
+                beforeEach(function () {
+                    binarta.application.gateway.addPublicConfig({ id: 'analytics.ga.key', value: 'ga-key' });
+                    binarta.application.gateway.addPublicConfig({ id: 'analytics.gtm.key', value: 'gtm-key' });
+                    triggerBinartaSchedule();
+                });
+                
+                describe('on scripts loaded', function () {
+                    beforeEach(function () {
+                        resourceLoader.getScriptDeferred.resolve();
+                        $rootScope.$digest();
+                    });
+
+                    it('current path is tracked once', function () {
+                        expect($analytics.pageTrack).toHaveBeenCalledTimes(1);
                     });
                 });
             });

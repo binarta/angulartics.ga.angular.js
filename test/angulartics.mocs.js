@@ -19,3 +19,4 @@ angular.module('angulartics', [])
     });
 
 angular.module('angulartics.google.analytics', []);
+angular.module('angulartics.google.tagmanager', []);
