@@ -1,9 +1,5 @@
-(function (angular) {
-    angular.module('angularticsx.ga', ['ngRoute', 'angularx', 'config', 'angulartics', 'angulartics.google.analytics', 'angulartics.google.tagmanager', 'binarta-applicationjs-angular1'])
-        .config(['$analyticsProvider', function ($analyticsProvider) {
-            $analyticsProvider.virtualPageviews(false);
-        }])
-        .service('analyticsService', ['$rootScope', '$location', '$analytics', 'config', 'resourceLoader', 'binarta', AnalyticsServiceScheduler])
+(function (angular) {    
+    angular.module('angularticsx.ga', ['angularticsx.ga.services', 'binarta-applicationjs-angular1'])
         .run(['binarta', 'analyticsService', function (binarta, analyticsService) {
             if (binarta.application.cookies.permission.status == 'permission-granted') {
                 analyticsService.schedule();
@@ -14,6 +10,12 @@
                 }
             });
         }]);
+
+    angular.module('angularticsx.ga.services', ['ngRoute', 'angularx', 'config', 'angulartics', 'angulartics.google.analytics', 'angulartics.google.tagmanager', 'binarta-applicationjs-angular1'])
+        .config(['$analyticsProvider', function ($analyticsProvider) {
+            $analyticsProvider.virtualPageviews(false);
+        }])
+        .service('analyticsService', ['$rootScope', '$location', '$analytics', 'config', 'resourceLoader', 'binarta', AnalyticsServiceScheduler]);
 
     function AnalyticsServiceScheduler($rootScope, $location, $analytics, config, resourceLoader, binarta) {
         this.schedule = function () {
@@ -78,6 +80,7 @@
                     return isNotSamePath;
                 }
             });
-        }
+        };
     }
+    
 })(angular);

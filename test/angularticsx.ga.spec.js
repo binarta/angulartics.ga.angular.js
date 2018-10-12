@@ -1,8 +1,7 @@
 describe('angularticsx.ga', function () {
-    beforeEach(module('angularticsx.ga'));
-    beforeEach(module('binartajs-angular1-spec'));
+    beforeEach(module('angularticsx.ga.services'));
 
-    var $rootScope, config, reader, binarta, resourceLoader, $analytics, $location, analyticsService;
+    var $rootScope, config, binarta, resourceLoader, $analytics, $location, analyticsService;
 
     beforeEach(inject(function (_$rootScope_, _configReader_, _config_, _binarta_, _resourceLoader_, _$analytics_, _$location_, _analyticsService_) {
         $rootScope = _$rootScope_;
@@ -30,6 +29,7 @@ describe('angularticsx.ga', function () {
             describe('when shared analytics key present', function () {
                 beforeEach(function () {
                     config.sharedAnalytics = 'shared-key';
+                    analyticsService.schedule();
                     triggerBinartaSchedule();
                 });
 
@@ -91,6 +91,7 @@ describe('angularticsx.ga', function () {
             describe('and given an Analytics key', function () {
                 beforeEach(function () {
                     binarta.application.gateway.addPublicConfig({ id: 'analytics.ga.key', value: 'ga-key' });
+                    analyticsService.schedule();
                     triggerBinartaSchedule();
                 });
 
@@ -146,6 +147,7 @@ describe('angularticsx.ga', function () {
             describe('and given an Google Tag Manager key', function () {
                 beforeEach(function () {
                     binarta.application.gateway.addPublicConfig({ id: 'analytics.gtm.key', value: 'gtm-key' });
+                    analyticsService.schedule();
                     triggerBinartaSchedule();
                 });
 
@@ -169,9 +171,10 @@ describe('angularticsx.ga', function () {
                 beforeEach(function () {
                     binarta.application.gateway.addPublicConfig({ id: 'analytics.ga.key', value: 'ga-key' });
                     binarta.application.gateway.addPublicConfig({ id: 'analytics.gtm.key', value: 'gtm-key' });
+                    analyticsService.schedule();
                     triggerBinartaSchedule();
                 });
-                
+
                 describe('on scripts loaded', function () {
                     beforeEach(function () {
                         resourceLoader.getScriptDeferred.resolve();
@@ -183,14 +186,6 @@ describe('angularticsx.ga', function () {
                     });
                 });
             });
-        });
-    });
-
-    describe('Default run on module injection -', function () {
-        it('Should schedule the analytics on receiving the "cookies.accepted" event', function () {
-            spyOn(analyticsService, 'schedule');
-            binarta.application.cookies.permission.grant();
-            expect(analyticsService.schedule).toHaveBeenCalled();
         });
     });
 });
